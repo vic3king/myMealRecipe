@@ -52,7 +52,7 @@ app.post('/add', (req, res) => {
     .catch(err => console.error(err));
 })
 
-//
+//deleting a recipe from the db
 app.delete('/delete/:id', (req, res) => {
   client
     .query(
@@ -62,6 +62,14 @@ app.delete('/delete/:id', (req, res) => {
     .catch(err => console.error(err))
 })
 
+app.post('/edit', (req, res) => {
+  client
+    .query(
+      "UPDATE recipes SET name = $1, ingredients = $2, directions = $3 WHERE id = $4",
+      [req.body.name, req.body.ingredients, req.body.directions, req.body.id])
+    .then(res.redirect("/"))
+    .catch(err => console.error(err))
+})
 //server 
 app.listen(3000, () => {
   console.log('Server Started On Port 3000')
