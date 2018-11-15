@@ -8,12 +8,6 @@ const dust = require('dustjs-helpers')
 const app = express()
 const { Pool, Client } = require('pg')
 
-//db connect string
-const connectionString = "postgres://victory:2020ada@localhost/recipebookdb"
-
-//create pool for client
-const pool = new Pool({ connectionString })
-
 //assign dust engine to .dust files
 app.engine('dust', cons.dust)
 
@@ -28,20 +22,32 @@ app.use(express.static(path.join(__dirname, 'public')))
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
 
+// DB connect
+const client = new Client({
+  user: "victory",
+  host: "localhost",
+  database: "recipebookdb",
+  password: "2020ada",
+  port: 5432
+});
+
+client.connect();
+
 app.get('/', (req, res) => {
-  //connect postgress
-  pool.connect((err, client, done) => {
-    if (err) {
-      return console.error('Error fetching client from pool', err)
-    }
-    client.query('SELECT * FROM recipes', (err, result) => {
-      if (err) {
-        console.error('Error running query', err)
-      }
-      res.render('index', { recipes: result.rows })
-      done()
-    })
-  })
+  client
+    .query("select * from recipes")
+    .then(result => res.render("index", { recipes: result.rows }))
+    .catch(err => console.error(err));
+})
+
+app.post('/add', (req, res) => {
+  client
+    .query(
+      "INSERT INTO recipes(name, ingredients, directions) VALUES($1, $2, $3)",
+      [req.body.name, req.body.ingredients, req.body.directions]
+    )
+    .then(res.redirect("/"))
+    .catch(err => console.error(err));
 })
 
 //server 
