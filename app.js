@@ -33,6 +33,7 @@ const client = new Client({
 
 client.connect();
 
+//get request to render all rows in the db
 app.get('/', (req, res) => {
   client
     .query("select * from recipes")
@@ -40,6 +41,7 @@ app.get('/', (req, res) => {
     .catch(err => console.error(err));
 })
 
+//post request to insert into the db
 app.post('/add', (req, res) => {
   client
     .query(
@@ -48,6 +50,16 @@ app.post('/add', (req, res) => {
     )
     .then(res.redirect("/"))
     .catch(err => console.error(err));
+})
+
+//
+app.delete('/delete/:id', (req, res) => {
+  client
+    .query(
+      "DELETE FROM recipes WHERE id = $1",
+      [req.params.id])
+    .then(res.sendStatus(200))
+    .catch(err => console.error(err))
 })
 
 //server 
